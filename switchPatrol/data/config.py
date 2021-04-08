@@ -1,0 +1,5 @@
+GAME_LIST = [
+]
+
+TG_API_TOKEN = ""
+TG_CHAT_ID = ""
