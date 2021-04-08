@@ -2,8 +2,8 @@ class Game:
 
     def __init__(self):
         self.name = ""
-        self.price = 0
-        self.new_price = 0
+        self.price = 0.0
+        self.new_price = 0.0
         self.presence = False
 
     def is_discount(self):
