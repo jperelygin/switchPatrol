@@ -1,8 +1,8 @@
 import requests
 import json
 import logging
-from Game import Game
-from data.config import GAME_LIST, TG_API_TOKEN, TG_CHAT_ID
+from .Game import Game
+from .data.config import GAME_LIST, TG_API_TOKEN, TG_CHAT_ID
 
 
 def get_proper_game_name(game_name):

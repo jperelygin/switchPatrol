@@ -2,7 +2,7 @@ import pytest
 import json
 import requests
 import switchPatrol.main
-import switchPatrol.Game
+from switchPatrol.Game import Game
 
 
 def test_proper_name_single_word():
@@ -19,7 +19,7 @@ def test_search_send_request():
     assert switchPatrol.main.search_a_game(name).status_code == requests.codes.ok
 
 def test_json_parse_one_game():
-    jsn = '{"response": {"numFound": 1, "docs":[{"system_names_txt" : ["Test"],"price_regular_f" : 100500,"price_lowest_f" : 100500}]}}'
+    jsn = '{"response": {"numFound": 1, "docs":[{"title" : "Test", "price_regular_f" : 100500,"price_lowest_f" : 100500}]}}'
     x = json.loads(jsn)
     parsed = switchPatrol.main.parse_json(x)
     assert len(parsed) > 0
@@ -34,7 +34,7 @@ def test_json_parse_no_games():
     assert len(parsed) == 0
 
 def test_json_parse_two_games():
-    jsn = '{"response": {"numFound": 2, "docs":[{"system_names_txt" : ["Test"],"price_regular_f" : 100500,"price_lowest_f" : 100500},{"system_names_txt" : ["Test2"],"price_regular_f" : 10500,"price_lowest_f" : 10500}]}}'
+    jsn = '{"response": {"numFound": 2, "docs":[{"title" : "Test","price_regular_f" : 100500,"price_lowest_f" : 100500},{"title" : "Test2","price_regular_f" : 10500,"price_lowest_f" : 10500}]}}'
     x = json.loads(jsn)
     parsed = switchPatrol.main.parse_json(x)
     assert len(parsed) == 2
@@ -42,7 +42,7 @@ def test_json_parse_two_games():
 # TODO: Add test with response.json
 
 def test_game_has_discount():
-    game = switchPatrol.Game.Game()
+    game = Game()
     game.price = 500
     game.new_price = 400
     assert game.is_discount() == True
