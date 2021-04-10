@@ -46,3 +46,17 @@ def test_game_has_discount():
     game.price = 500
     game.new_price = 400
     assert game.is_discount() == True
+
+def test_parse_game_price():
+    jsn = '{"docs":[{"title" : "Test", "price_regular_f" : null,"price_lowest_f" : 100500}]}'
+    x = json.loads(jsn)
+    game = Game()
+    game.price = switchPatrol.main.parse_game_price(x)
+    assert game.price == 0.0
+
+def test_parse_game_new_price():
+    jsn = '{"docs":[{"title" : "Test", "price_regular_f" : 100500,"price_lowest_f" : null}]}'
+    x = json.loads(jsn)
+    game = Game()
+    game.new_price = switchPatrol.main.parse_game_new_price(x)
+    assert game.new_price == 0.0

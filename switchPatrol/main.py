@@ -12,7 +12,7 @@ def get_proper_game_name(game_name):
         for i in parsed:
             proper_name = proper_name + "%20" + i
         proper_name = proper_name[3:]
-        logging.debug(f'get_proper_game_name\nProper name of {game_name}: {proper_name}')
+        logging.debug(f'get_proper_game_name\tProper name of {game_name}: {proper_name}')
     else:
         proper_name = parsed[0]
     return proper_name
@@ -24,6 +24,25 @@ def search_a_game(game_name):
     #logging.debug(f'Request result is :\t{result.text}')
     return result
 
+def parse_game_name(parsed_json):
+    result = parsed_json.get('title')
+    logging.info(f'parse_json\tGame.name:\t{result}')
+    return result
+
+def parse_game_price(parsed_json):
+    result = parsed_json.get('price_lowest_f')
+    logging.info(f'parse_json\tGame.new_price:\t{result}')
+    if result == None:
+        result = 0.0
+    return result
+
+def parse_game_new_price(parsed_json):
+    result = parsed_json.get('price_regular_f')
+    logging.info(f'parse_json\tGame.price:\t{result}')
+    if result == None:
+        result = 0.0
+    return result
+
 def parse_json(json_text):
     games = []
     response = json_text.get('response')
@@ -31,15 +50,14 @@ def parse_json(json_text):
         for element in json_text['response']['docs']:
             try:
                 game = Game()
-                game.name = element.get('title')
-                game.price = element.get('price_regular_f')
-                game.new_price = element.get('price_lowest_f')
+                game.name = parse_game_name(element)
+                game.price = parse_game_price(element)
+                game.new_price = parse_game_new_price(element)
                 games.append(game)
-                logging.info(f'parse_json\tGame parsed:\n{game}')
             except KeyError:
-                logging.error("Something wrong with response json!")
+                logging.exception("Something wrong with response json!")
     else:
-        print("No games found!")
+        logging.info("No games found!")
     return games
 
 def check_game(games, game_name):
@@ -50,6 +68,7 @@ def check_game(games, game_name):
     return games
 
 def send_notification(games, api_token, chat_id):
+    # TODO: Fix compiling msg. Separate compiling and sending
     msg = ""
     for game in games:
         logging.debug(f'send_notification\tgame:\n{game}')
@@ -64,8 +83,9 @@ def send_notification(games, api_token, chat_id):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %H:%M:%S', 
-        filename='patrol.log', encoding='utf-8', level=logging.DEBUG)
+    FORMAT = '%(asctime)s %(levelname)s: %(message)s'
+    logging.basicConfig(format=FORMAT, datefmt='%m/%d/%Y %H:%M:%S', 
+        filename='patrol.log', level=logging.DEBUG)
     for game in GAME_LIST:
         proper_name = get_proper_game_name(game)
         games_from_json = parse_json(json.loads(search_a_game(proper_name).text))
