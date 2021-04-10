@@ -60,3 +60,19 @@ def test_parse_game_new_price():
     game = Game()
     game.new_price = switchPatrol.main.parse_game_new_price(x)
     assert game.new_price == 0.0
+
+def test_check_game_not_present():
+    game_name = "Test Test"
+    game1 = Game()
+    game1.name = "1 Test"
+    games = [game1]
+    switchPatrol.main.check_game(games, game_name)
+    assert game1.presence == False
+
+def test_check_game_is_present():
+    game_name = "Test Test"
+    game1 = Game()
+    game1.name = "Test Test"
+    games = [game1]
+    switchPatrol.main.check_game(games, game_name)
+    assert game1.presence == True

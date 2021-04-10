@@ -20,25 +20,24 @@ def get_proper_game_name(game_name):
 def search_a_game(game_name):
     nintendo_search_link = "https://searching.nintendo-europe.com/ru/select?q="
     type_link_part = "&fq=type%3AGAME"
-    result = requests.get(nintendo_search_link + get_proper_game_name(game_name) + type_link_part)
-    #logging.debug(f'Request result is :\t{result.text}')
-    return result
+    game_search_link = requests.get(nintendo_search_link + get_proper_game_name(game_name) + type_link_part)
+    return game_search_link
 
 def parse_game_name(parsed_json):
     result = parsed_json.get('title')
-    logging.info(f'parse_json\tGame.name:\t{result}')
+    logging.info(f'parse_game_name\tGame.name:\t{result}')
     return result
 
 def parse_game_price(parsed_json):
     result = parsed_json.get('price_lowest_f')
-    logging.info(f'parse_json\tGame.new_price:\t{result}')
+    logging.info(f'parse_game_price\tGame.new_price:\t{result}')
     if result == None:
         result = 0.0
     return result
 
 def parse_game_new_price(parsed_json):
     result = parsed_json.get('price_regular_f')
-    logging.info(f'parse_json\tGame.price:\t{result}')
+    logging.info(f'parse_game_new_price\tGame.price:\t{result}')
     if result == None:
         result = 0.0
     return result
@@ -55,9 +54,9 @@ def parse_json(json_text):
                 game.new_price = parse_game_new_price(element)
                 games.append(game)
             except KeyError:
-                logging.exception("Something wrong with response json!")
+                logging.exception("parse_json\tSomething wrong with response json!")
     else:
-        logging.info("No games found!")
+        logging.info("parse_json\tNo games found!")
     return games
 
 def check_game(games, game_name):
@@ -65,29 +64,34 @@ def check_game(games, game_name):
         for i in games:
             if i.name == game_name:
                 i.presence = True
-    return games
 
-def send_notification(games, api_token, chat_id):
-    # TODO: Fix compiling msg. Separate compiling and sending
+def prepare_message(games):
     msg = ""
     for game in games:
-        logging.debug(f'send_notification\tgame:\n{game}')
+        logging.debug(f'prepare_message\tgame:\n{game}')
         if game.presence:
-            msg += game
-            logging.info(f'send_notification\t!!!  \n{game}')
-    logging.info(f'send_notification\tMsg is:\n{msg}')
-    req = f"https://api.telegram.org/bot{api_token}/sendMessage?chat_id={chat_id}&text={msg}"
-    r = requests.get(req)
-    logging.info(f'send_notification\tTg notificator:\n{r.status_code}\t{r.text}')
-    return r.status_code
+            msg += str(game)
+            logging.info(f'prepare_message\t!!!  \n{game}')
+    return msg
+
+def send_notification(message, api_token, chat_id):
+    if message != "":
+        logging.info(f'send_notification\tMessage is:\n{message}')
+        req = f"https://api.telegram.org/bot{api_token}/sendMessage?chat_id={chat_id}&text={message}"
+        r = requests.get(req)
+        logging.info(f'send_notification\tTg notificator:\n{r.status_code}\t{r.text}')
+    else:
+        logging.info("send_notification\tMessage text if empty.")
 
 
 if __name__ == "__main__":
     FORMAT = '%(asctime)s %(levelname)s: %(message)s'
     logging.basicConfig(format=FORMAT, datefmt='%m/%d/%Y %H:%M:%S', 
         filename='patrol.log', level=logging.DEBUG)
+    message = ""
     for game in GAME_LIST:
         proper_name = get_proper_game_name(game)
         games_from_json = parse_json(json.loads(search_a_game(proper_name).text))
-        checked_games = check_game(games_from_json, game)
-        send_notification(checked_games, TG_API_TOKEN, TG_CHAT_ID)
+        check_game(games_from_json, game)
+        message += prepare_message(games_from_json)
+    send_notification(message, TG_API_TOKEN, TG_CHAT_ID)
