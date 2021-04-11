@@ -16,8 +16,8 @@ def test_proper_name_multiple_words():
 @pytest.mark.skip
 def test_search_send_request():
     name = "Mario"
-    assert switchPatrol.main.search_a_game(name).status_code == requests.codes.ok
-
+    assert switchPatrol.main.search_a_game(name).status_code == requests.codes['ok']
+   
 def test_json_parse_one_game():
     jsn = '{"response": {"numFound": 1, "docs":[{"title" : "Test", "price_regular_f" : 100500,"price_lowest_f" : 100500}]}}'
     x = json.loads(jsn)
@@ -73,6 +73,14 @@ def test_check_game_is_present():
     game_name = "Test Test"
     game1 = Game()
     game1.name = "Test Test"
+    games = [game1]
+    switchPatrol.main.check_game(games, game_name)
+    assert game1.presence == True
+
+def test_check_game_is_present_partial_name():
+    game_name = "Test 123"
+    game1 = Game()
+    game1.name = "Test 123: Test Test"
     games = [game1]
     switchPatrol.main.check_game(games, game_name)
     assert game1.presence == True

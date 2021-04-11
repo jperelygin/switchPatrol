@@ -29,14 +29,14 @@ def parse_game_name(parsed_json):
     return result
 
 def parse_game_price(parsed_json):
-    result = parsed_json.get('price_lowest_f')
+    result = parsed_json.get('price_regular_f')
     logging.info(f'parse_game_price\tGame.new_price:\t{result}')
     if result == None:
         result = 0.0
     return result
 
 def parse_game_new_price(parsed_json):
-    result = parsed_json.get('price_regular_f')
+    result = parsed_json.get('price_lowest_f')
     logging.info(f'parse_game_new_price\tGame.price:\t{result}')
     if result == None:
         result = 0.0
@@ -62,7 +62,7 @@ def parse_json(json_text):
 def check_game(games, game_name):
     if len(games) > 0:
         for i in games:
-            if i.name == game_name:
+            if game_name in i.name:
                 i.presence = True
 
 def prepare_message(games):
@@ -83,11 +83,7 @@ def send_notification(message, api_token, chat_id):
     else:
         logging.info("send_notification\tMessage text if empty.")
 
-
-if __name__ == "__main__":
-    FORMAT = '%(asctime)s %(levelname)s: %(message)s'
-    logging.basicConfig(format=FORMAT, datefmt='%m/%d/%Y %H:%M:%S', 
-        filename='patrol.log', level=logging.DEBUG)
+def main():
     message = ""
     for game in GAME_LIST:
         proper_name = get_proper_game_name(game)
@@ -95,3 +91,10 @@ if __name__ == "__main__":
         check_game(games_from_json, game)
         message += prepare_message(games_from_json)
     send_notification(message, TG_API_TOKEN, TG_CHAT_ID)
+
+
+if __name__ == "__main__":
+    FORMAT = '%(asctime)s %(levelname)s: %(message)s'
+    logging.basicConfig(format=FORMAT, datefmt='%m/%d/%Y %H:%M:%S', 
+        filename='patrol.log', level=logging.DEBUG)
+    main()
